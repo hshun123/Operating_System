@@ -1,0 +1,58 @@
+/*test machine: csel-keller4250-11
+* date: 11/12/19
+* name: Eric Hwang, [Mihoko Kawada]
+* x500: hwang241, [kawad003]
+*/
+
+--------------------------------------------------
+Homework 3 - readme
+--------------------------------------------------
+
+Files Includes With This Project:
+Main.c
+Mymake
+README
+producer.c
+consumer.c
+utils.c
+header.h
+
+--------------------------------------------------
+
+(1) How to compile the program
+$ make
+$ ./wcs #consumer filename -p: for -p case
+$ ./wcs #consumer filename -b #queue_size : for -b case
+$ ./wcs #consumer filename -bp #queue_size : for -bp case
+
+--------------------------------------------------
+
+(2) Your and your partners individual contributions
+Most parts of the project were done by both of us. Eric implemeted the entire project
+briefly, then Mihoko modified and added details for functionalities. In addition, log
+print and creating result.txt are written by Mihoko. Both of us tested the project
+and fixed the problems and segmentation fault together.
+--------------------------------------------------
+
+(3) Any assumptions outside this document
+- Existing txt files are in the same directory. It prevents us from inputting the whole path for
+the txt file. We only need to input filename in the command line.
+- One line of input file has at most 1024.
+- One input file has at most 10000 lines.
+- If input file does not exist, log.txt and result.txt will be empty.
+
+--------------------------------------------------
+
+(4) What exactly your program does
+
+
+
+
+
+--------------------------------------------------
+
+(5) If you have attempted extra credit
+We have attempted extra credit, and it gives the right result.
+
+
+--------------------------------------------------

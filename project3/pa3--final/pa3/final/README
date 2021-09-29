@@ -1,0 +1,81 @@
+/*test machine: csel-keller4250-11
+* date: 11/12/19
+* name: Eric Hwang, [Mihoko Kawada]
+* x500: hwang241, [kawad003]
+*/
+
+--------------------------------------------------
+Homework 3 - README
+--------------------------------------------------
+
+Files Includes With This Project:
+Main.c
+producer.c
+consumer.c
+utils.c
+header.h
+Makefile
+README
+
+--------------------------------------------------
+
+(1) The purpose of your program
+The purpose is to count the number of words, per letter of the alphabet from a
+given file, and the result is reported in the alphabetical order using the
+MapReduce model.
+
+--------------------------------------------------
+
+(2) How to compile the program
+
+$ make
+run:
+e.g
+$ ./wcs #consumer filename [option] [#queue_size]
+
+--------------------------------------------------
+
+(3) What exactly your program does
+  1. Critical section
+    Threads are created in main and they share a shared queue and global int array
+    defined in header.h and utils.c. We lock every time each thread access to
+    either of them.
+
+  2. producer
+    the producer thread is to read the input file and pass the data into the shared
+    queue. It send notification once it reaches EOF. Writes the line number to
+    the log.txt file as well.
+
+  3. consumer
+    Each consumer thread get one line from the file from the shared queue, and counts
+    the first letter of each word and save it in the global int array. It lock
+    every time a thread access to the shared queue or modify the int array. Writes
+    the id and line number to the log.txt file as well.
+
+--------------------------------------------------
+
+(4) Any assumptions outside this document
+We assumed there is no log.txt or result.txt exist in the same folder, as well as
+a given file name exists in the same folder or else, the path to the file is given.
+If the input file does not exsit, log.txt and result.txt is empty.
+
+--------------------------------------------------
+
+(5) Team names and x500
+Team name: EdCC
+X500: hwang241, kawad003
+
+--------------------------------------------------
+
+(6) Your and your partners individual contributions
+We both worked on how to implement multi-threads in main. Eric implemented the shared
+queue and handled how to keep track of file information including how many lines
+it has so producer knows. Mihoko wrote README and handled lock for consumer including
+locking for the shared queue and the global int array. We both tested independently.
+
+--------------------------------------------------
+
+(7) If you have attempted extra credit
+We have attemped extra credit. It print out the expected output correctly.
+
+--------------------------------------------------
