@@ -1,0 +1,68 @@
+/*test machine: csel-keller4250-06
+* date: 12/6/2019
+* name: Eric Hwang, [Mihoko Kawada]
+* x500: hwang241, [kawad003]
+*/
+
+--------------------------------------------------
+Homework 4 - README
+--------------------------------------------------
+
+(1) Files Includes With This Project:
+
+PA4_Client
+  1. include: header files
+  2. src: client.c, phase1.c
+  3. makefile
+  4. excutable client
+  5. command.txt
+
+PA4_Server
+  1. include: protocol.h
+  2. src: client.c, phase1.c
+  3. makefile
+  4. excutable server
+
+README
+
+--------------------------------------------------
+
+(2) How to compile and run the program
+
+compile:
+$ make
+
+run:
+$./server <Server Port>
+$ ./client <Folder Name> <# of Mappers> <Server IP> <Server Port>
+
+--------------------------------------------------
+
+(3) Your and your partners individual contributions
+
+Eric implemented the client side and Mihoko worked on the server side. We both
+worked on the error handling regardless on our part and extra credits. For counting
+words for each path, Eric refered to some functions used in Project 2. Sending and
+receiving requests and responses are implemented by both of us mainly using write()
+and read() functions. azList and updateStatus are implemented by Mihoko. 
+
+--------------------------------------------------
+
+(4) Any assumptions outside this document
+We assumed there is no MapperInput or log folder exist in the same folder, as well as
+a given file name exists in the same folder or else, the path to the file is given.
+Also, server takes mapperID that bigger than 0 and -1 for extra credit, thus there
+is no error message to tell for Master(extra credit) because we assume -1 as a correct
+mapperID.
+Only Server side handles and prints out the error message on terminal such as wrong
+mapperID and wrong commands.
+If clients send a request with an empty file, client prints out the error message on
+terminal but log.txt remains empty, but server doesn't do anything.
+The maximum number of mapper is 32 as mentioned in the documents.
+The minimum number of mapper is 1.
+--------------------------------------------------
+
+(5) If you have attempted extra credit
+We have attemped extra credit. It print out the expected output correctly.
+
+--------------------------------------------------

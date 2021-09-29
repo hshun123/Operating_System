@@ -1,3 +1,8 @@
+/*test machine: csel-keller4250-06
+* date: 12/6/2019
+* name: Eric Hwang, [Mihoko Kawada]
+* x500: hwang241, [kawad003]
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +13,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <unistd.h>
 #include "../include/protocol.h"
+//#include "phase1.c"
 
 FILE *logfp;
 int ok;
@@ -45,14 +52,14 @@ char** process_file(char *fname)
 {
 	FILE* fp = fopen(fname, "r");
 
-	char line[1000];
+	char line[1024];
 	int i = 0;
   char **pathlines;
 
   //dynamically allocating multi array
-    pathlines = malloc (1000 * sizeof(char*));
-    for(int j = 0; j < 1000; j++){
-       pathlines[j] = malloc(1000 * sizeof(char));
+    pathlines = malloc (1024 * sizeof(char*));
+    for(int j = 0; j < 1024; j++){
+       pathlines[j] = malloc(1024 * sizeof(char));
     }
 	if (!fp) {
 		printf("Failed to open the file: **************%s*********** \n", fname);
@@ -62,7 +69,7 @@ char** process_file(char *fname)
 	}
 
 	//Read the contents and store in lines
-	while (fgets(line, 1000, fp)){
+	while (fgets(line, 1024, fp)){
 		strncpy(pathlines[i++], line, strlen(line) + 1);
     }
     //eric
@@ -87,7 +94,7 @@ int* countletters(char* txtpath, int* test){
         //check the first letter in the word
         for(int j = 0; j < 28; j++){
             if((check[i][0] == letters[j]) || (check[i][0] == upper_letters[j])){
-                test[j]++;
+                test[j + 2]++;
             }
         }
     }
@@ -140,6 +147,12 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
+        if(mappers <= 0){
+          printf("Minimum number of mappers is 1.\n");
+          printf("./client <Folder Name> <# of mappers> <server IP> <server Port>\n");
+          exit(1);
+        }
+
     } else {
         printf("Invalid or less number of arguments provided\n");
         printf("./client <Folder Name> <# of mappers> <server IP> <server Port>\n");
@@ -166,10 +179,7 @@ int main(int argc, char *argv[]) {
           return 1;
       }
 
-      if(cpid > 0 ){
-        //parent do nothing
-      }
-      else{
+      if(cpid == 0){
 
         //cwd contains the current directory path
       	char cwd[1000];
@@ -181,13 +191,15 @@ int main(int argc, char *argv[]) {
       	}
 
         int mapper_id = j + 1; // mapper id
+
+        //store the path of Mapper_j.txt to buffer
         char* tpath = (char*)malloc(1000* sizeof(char));
         strcpy(tpath, argv[1]);
         strcpy(tpath, cwd);
 
         strcat(tpath, "\0");
 
-        snprintf(buffer, 100, "%s/MapperInput/Mapper_%d.txt",tpath, j + 1);
+        snprintf(buffer, 100, "%s/MapperInput/Mapper_%d.txt",tpath, j +1);
 
         free(tpath);
 
@@ -205,7 +217,7 @@ int main(int argc, char *argv[]) {
     		if (connect(sockfd, (struct sockaddr *) &address, sizeof(address)) == 0) {
 
           //log printout for TCP connection
-          printf("[%d] open connection\n", mapper_id);
+					printf("[%d] open connection\n", mapper_id);
           fprintf(logfp, "[%d] open connection\n", mapper_id);
 
       		int request[REQUEST_MSG_SIZE]; // 28
@@ -216,6 +228,7 @@ int main(int argc, char *argv[]) {
           for(int i = 0; i < REQUEST_MSG_SIZE; i++){
             request[i] = 0;
           }
+
 
           //CHECKIN
           request[0] = 1;
@@ -237,7 +250,13 @@ int main(int argc, char *argv[]) {
           int num_of_txt = ok;
 
           //loop through all the paths in the Mapper_j.txt
+					//printf("%d\n", num_of_txt);
           for(int i = 0; i < num_of_txt; i++){
+
+            //initialize integer arrays
+            for(int i = 0; i < REQUEST_MSG_SIZE; i++){
+              request[i] = 0;
+            }
 
               //store the word count result of each file to integer array
               Map(paths[i], request);
@@ -246,13 +265,16 @@ int main(int argc, char *argv[]) {
               request[1] = mapper_id;
 
               write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE);
+
+              read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
           }
 
-          read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
-          //Eric for test
-          printf("[%d] UPDATE_AZLIST: %d\n", response1[2], num_of_txt);
 
-          fprintf(logfp, "[%d] UPDATE_AZLIST: %d\n", response1[2], num_of_txt);
+          //Eric for test
+          //This is printing out on terminal
+          printf("[%d] UPDATE_AZLIST: %d\n", mapper_id, num_of_txt);
+
+          fprintf(logfp, "[%d] UPDATE_AZLIST: %d\n", mapper_id, num_of_txt);
 
           free(paths);
 
@@ -280,14 +302,14 @@ int main(int argc, char *argv[]) {
           request[0] = 4;
           request[1] = mapper_id;
 
-          write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE);
+          write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE );
 
           read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
 
           //Eric for tests
-          printf("\n[%d] GET_MAPPER_UPDATES: %d %d\n", mapper_id, response1[1], response2[2]);
+          printf("\n[%d] GET_MAPPER_UPDATES: %d %d\n", mapper_id, response1[1], response1[2]);
 
-          fprintf(logfp, "\n[%d] GET_MAPPER_UPDATES: %d %d\n", mapper_id, response1[1], response2[2]);
+          fprintf(logfp, "\n[%d] GET_MAPPER_UPDATES: %d %d\n", mapper_id, response1[1], response1[2]);
 
 
           //GET_ALL_UPDATES
@@ -299,9 +321,9 @@ int main(int argc, char *argv[]) {
           read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
 
           //Eric for test
-          printf("[%d] GET_ALL_UPDATES: %d %d\n", mapper_id, response1[1], response2[2]);
+          printf("[%d] GET_ALL_UPDATES: %d %d\n", mapper_id, response1[1], response1[2]);
 
-          fprintf(logfp, "[%d] GET_ALL_UPDATES: %d %d\n", mapper_id, response1[1], response2[2]);
+          fprintf(logfp, "[%d] GET_ALL_UPDATES: %d %d\n", mapper_id, response1[1], response1[2]);
 
 
           //CHECKOUT
@@ -329,20 +351,224 @@ int main(int argc, char *argv[]) {
           perror("Connection failed!");
         }
         //--------------------------------------------TCP CONNECT-------------------------------
+        //exit
         exit(0);
-      }
-    }
+
+      }//mapper body
+    }//end of fork
 
     pid_t wpid;
     int status = 0;
+    //Master wait for children to finish
+    //while((wpid == wait(&status)) > 0);
 
-    while(wpid == wait(&status) > 0);
-
-    //Extra credit
-
+    //Master wait for all the child process to finish
+    for(int t = 0; t < mappers; t ++){
+        wait(&status);
+    }
 
     // Phase3 - Master Client's Dynamic Request Handling (Extra Credit)
+    FILE* file = fopen("commands.txt", "r");
+    int i = 0;
+    int extra_id =-1;
+
+    //set up for integer arrays
+    int request[REQUEST_MSG_SIZE]; // 28
+    int response1[RESPONSE_MSG_SIZE]; // 1 1 1
+    int response2[LONG_RESPONSE_MSG_SIZE]; //1 1 26
+
+    //initialize integer arrays
+    for(int i = 0; i < REQUEST_MSG_SIZE; i++){
+      request[i] = 0;
+    }
+
+    //while the file reaches the eof
+    while (!feof(file)){
+
+      // Create a TCP socket.
+      int sockfd = socket(AF_INET , SOCK_STREAM , 0);
+
+      // Specify an address to connect to (we use the local host or 'loop-back' address).
+      struct sockaddr_in address;
+      address.sin_family = AF_INET;
+      address.sin_port = htons(server_port);
+      address.sin_addr.s_addr = inet_addr(server_ip);
+
+      //read the integer from the command.txt
+      fscanf (file, "%d\n", &i);
+
+      //switch case for check the command
+      switch (i) {
+        case CHECKIN: //1
+
+          if(connect(sockfd, (struct sockaddr *) &address, sizeof(address)) == 0){
+
+            printf("[%d] open connection\n", extra_id);
+            fprintf(logfp, "[%d] open connection\n", extra_id);
+
+            //CHECKIN
+            request[0] = 1;
+            request[1] = extra_id;
+            write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE);
+            read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
+
+            //Eric for test
+            printf("[%d] CHECKIN: %d %d\n",extra_id, response1[1], response1[2]);
+            fprintf(logfp, "[%d] CHECKIN: %d %d\n",extra_id, response1[1], response1[2]);
+
+            //close connection
+            close(sockfd);
+            printf("[%d] close connection\n", extra_id);
+            fprintf(logfp, "[%d] close connection\n", extra_id);
+
+          }else{
+            perror("Connection failed!");
+          }
+
+
+          break;
+
+        case UPDATE_AZLIST: //2
+
+          if(connect(sockfd, (struct sockaddr *) &address, sizeof(address)) == 0){
+
+            printf("[%d] open connection\n", extra_id);
+            fprintf(logfp, "[%d] open connection\n", extra_id);
+
+            request[0] = 2;
+            request[1] = extra_id;
+            write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE);
+            read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
+
+            //close connection
+            close(sockfd);
+            fprintf(logfp, "[%d] close connection\n", extra_id);
+
+          }else{
+            perror("Connection failed!");
+          }
+          break;
+        case GET_AZLIST: //3
+          if(connect(sockfd, (struct sockaddr *) &address, sizeof(address)) == 0){
+
+            printf("[%d] open connection\n", extra_id);
+            fprintf(logfp, "[%d] open connection\n", extra_id);
+
+            request[0] = 3;
+            request[1] = extra_id;
+            write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE);
+            read(sockfd, response2, sizeof(int) * LONG_RESPONSE_MSG_SIZE);
+
+            //Eric for tests
+            printf("[%d] GET_AZLIST: %d ", extra_id, response2[1]);
+            for(int i = 2; i < 28; i++){
+              printf("%d ",response2[i]);
+            }
+            //log printout
+            fprintf(logfp,"[%d] GET_AZLIST: %d ", extra_id, response2[1]);
+            for(int i = 2; i < 28; i++){
+              fprintf(logfp, "%d ",response2[i]);
+            }
+
+            //close connection
+            close(sockfd);
+            printf("\n[%d] close connection\n", extra_id);
+            fprintf(logfp, "\n[%d] close connection\n", extra_id);
+
+          }else{
+            perror("Connection failed!");
+          }
+          break;
+
+        case GET_MAPPER_UPDATES: //4
+
+          if(connect(sockfd, (struct sockaddr *) &address, sizeof(address)) == 0){
+
+            printf("[%d] open connection\n", extra_id);
+            fprintf(logfp, "[%d] open connection\n", extra_id);
+
+            request[0] = 4;
+            request[1] = extra_id;
+
+            write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE );
+
+            read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
+
+            //Eric for tests
+            printf("\n[%d] GET_MAPPER_UPDATES: %d %d\n", extra_id, response1[1], response1[2]);
+
+            fprintf(logfp, "[%d] GET_MAPPER_UPDATES: %d %d\n", extra_id, response1[1], response1[2]);
+
+            //close connection
+            close(sockfd);
+            fprintf(logfp, "[%d] close connection\n", extra_id);
+
+
+          }else{
+              perror("Connection failed!");
+          }
+
+          break;
+        case GET_ALL_UPDATES: //5
+
+          if(connect(sockfd, (struct sockaddr *) &address, sizeof(address)) == 0){
+
+            printf("[%d] open connection\n", extra_id);
+            fprintf(logfp, "[%d] open connection\n", extra_id);
+            request[0] = 5;
+            request[1] = extra_id;
+
+            write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE);
+
+            read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
+
+            //Eric for test
+            printf("[%d] GET_ALL_UPDATES: %d %d\n", extra_id, response1[1], response1[2]);
+
+            fprintf(logfp, "[%d] GET_ALL_UPDATES: %d %d\n", extra_id, response1[1], response1[2]);
+
+            //close connection
+            close(sockfd);
+            fprintf(logfp, "[%d] close connection\n", extra_id);
+
+          }else{
+              perror("Connection failed!");
+          }
+          break;
+        case CHECKOUT: //6
+          if(connect(sockfd, (struct sockaddr *) &address, sizeof(address)) == 0){
+            printf("[%d] open connection\n", extra_id);
+            fprintf(logfp, "[%d] open connection\n", extra_id);
+            request[0] = 6;
+            request[1] = extra_id;
+
+            write(sockfd, request, sizeof(int) * REQUEST_MSG_SIZE);
+
+            read(sockfd, response1, sizeof(int) * RESPONSE_MSG_SIZE);
+
+            //Eric for tests
+            printf("[%d] CHECKOUT: %d %d\n", extra_id, response1[1],response1[2]);
+
+            fprintf(logfp, "[%d] CHECKOUT: %d %d\n", extra_id, response1[1],response1[2]);
+
+            //close connection
+            close(sockfd);
+            fprintf(logfp, "[%d] close connection\n", extra_id);
+
+          }else{
+              perror("Connection failed!");
+          }
+          break;
+        default:
+          printf("wrong command\n");
+          fprintf(logfp,"[%d] wrong command", extra_id);
+          break;
+        }
+      }
+      fclose (file);
+
     fclose(logfp);
+
     return 0;
 
 }
