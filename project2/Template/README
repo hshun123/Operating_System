@@ -1,0 +1,94 @@
+/*test machine: csel-keller4250-11                                                    
+* date: 10/25/19
+* name: Eric Hwang, [Mihoko Kawada]
+* x500: hwang241, [kawad003]
+*/
+
+--------------------------------------------------
+Homework 2 - readme
+--------------------------------------------------
+
+Files Includes With This Project:
+Main.c , main.h
+phase1.c , phase1.h
+phase2.c , phase2.h
+phase3.c , phase3.h
+phase4.c , phase4.h
+mapreduce
+README
+
+--------------------------------------------------
+
+(1) The purpose of your program
+The purpose is to count the number of words, per letter of the alphabet from given
+folders with multiple level of folders and text files, and the result is reported
+in the alphabetical order using the MapReduce model.
+
+--------------------------------------------------
+
+(2) How to compile the program
+
+$ make mapreduce
+
+run: 
+e.g
+$ ./mapreduce ../Testcases/TestCase2 1
+
+--------------------------------------------------
+
+(3) What exactly your program does
+  1. phase1
+    The ’master’ process creates a folder "MapperInput" in the current directory.
+    It will then recursively traverses through the ’Sample’ folder hierarchy.
+    "your_recursive_func" traverse every directory and store each txt file into paths.
+    and "process" creates the MapperInput directory and stores txt files into
+    Mapper_i.txt using round robin.
+
+  2. phase2
+    The master process creates ’m’ pipes, one per mapper to communicate with the
+    reducer process. The master then spawns the mapper processes. Each mapper
+    process will pick one file from the "MapperInput",open each filepaths in the
+    file and find the number of words corresponding to each letter of the alphabet.
+    This information is then send to the reducer process via pipe by each mapper.
+    trimNewline trims the newLine \n in the tokens, and countletters counts the
+    word per letter. Then, sumcounts calculate the sum of each element in arrays.
+    Map returns to an int array of counted number correcponed to each alphabet.
+
+  3. phase3
+    The reducer process will receive the lists from each of the mapper processes
+    via pipes and combine them to create a single list that made in main.c and passed
+    to phase3. The list is then written into a text file "ReducerResult.txt" in
+    the current folder.
+
+  4. phase4
+    It will then read the results from ’ReducerResult.txt and report it to standard
+    output. But the catch here is that, the standard output is redirected to a file
+    "FinalResult.txt" in the current folder.
+
+--------------------------------------------------
+
+(4) Any assumptions outside this document
+We assumed there is no MapperInput, ReducerResult.txt, FinalResult.txt exist in
+the same directory.
+
+--------------------------------------------------
+
+(5) Team names and x500
+Team name: EdCC
+X500: hwang241, kawad003
+
+--------------------------------------------------
+
+(6) Your and your partners individual contributions
+We both worked on phase 1 and 4 together to figure out, and Eric took the lead of
+phase 2 and Mhoko did phase3. we often talked about strategy together as we
+implemented pipe for phase2 and phase3. Eric was able to fix the unknown error that
+we were facing at accessing to path with help of a TAs, and Mihoko wrote README.
+
+--------------------------------------------------
+
+(7) If you have attempted extra credit
+We have attemped extra credit. It print out the expected output correctly.
+We are printing out the information about each soft links as well.
+
+--------------------------------------------------
