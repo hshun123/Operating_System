@@ -1,0 +1,92 @@
+/*test machine: csel-kh4250-37
+* date: 10/09/19
+* name: Eric Hwang, [Mihoko Kawada]
+* x500: hwang241, [kawad003]
+*/
+
+--------------------------------------------------
+Homework 1 - readme
+--------------------------------------------------
+
+Files Includes With This Project:
+Main.c
+Mymake
+README
+dfs_stack.h
+graph.h
+
+--------------------------------------------------
+
+(1) The purpose of your program
+The purpose is to generate an executable ’mymake’, from main.c with a given makefile
+filename and an optional target as command line arguments. It parses the makefile and
+searches dependencies for each target by its order. Also, it executes the recipes
+for the said target, by spawning a new process per recipe, via fork and exec,
+as determined by the Depth first search. If no target is specified as a command
+line argument, the first target in the makefile is chosen.
+
+--------------------------------------------------
+
+(2) How to compile the program
+$ -gcc -o make mymake main.c
+$ ./mymake [-p] filename : for part 1.1
+$ ./mymake [-r] filename  : for part 1.2
+$ ./mymake makefile_in : for part 1.3
+$ ./mymake makefile_in target : for part 1.3
+
+--------------------------------------------------
+
+(3) What exactly your program does
+    1.1 Parsing the input makefile
+    If we have 3 command line arguments and 2nd one is ”-p”, it prints out each target
+    followed by their dependencies and recipes as well as the number of dependencies
+    and recipes. We parsed each line with makeargv and returned the number of tokens
+    for each line by using the delimiters of colon and space. And we determined targets
+    and counted the number of them by checking if there is “:”, and counted the number
+    of each dependencies and store in the array to print out.
+
+    1.2 Determining the order of recipes
+    Here, we also counted the number of targets, dependencies and recipes as we did
+    in part 1.1. Then, we passed the number of targets along the array stored into
+    the Depth First Search function. We use the stack implementation of isEmpty,
+    push and pop to search for the deepest child(target) to make the order. We also
+    made another function to keep a track of dependency which has not been visited
+    for this target. It prints out all the recipes for the target, and pops out the
+    target if all the dependencies are visited.
+
+    1.3 Fork and exec the recipes.
+    We first checked if we can open the file, then used DFS_dep_fork function
+    get the array of integer which is the order of target to execute.
+    We parsed the recipe to get filename and arguments for execvp to execute each
+    recipe in corresponding order in the child process.
+
+--------------------------------------------------
+
+(4) Any assumptions outside this document
+We assumed all the files used on recipes in makefiles exist. We print out the recipe name
+for not existing files but does not excute.
+
+--------------------------------------------------
+
+(5) Team names and x500
+Team name: EdCC
+X500: hwang241, kawad003
+
+--------------------------------------------------
+
+(6) Your and your partners individual contributions
+Eric was the driver and Mihoko was the observer in the aspect of pair programming
+for this project. Eric figured how to parse by using makeargv and we often talked
+about strategy together as we implemented stack for Depth First Search and figured
+out when to push and pop. Eric came up with the idea of having a lot of helper
+functions and using them efficiently for making orders and Depth First Search.
+Mihoko run the test to make sure everything works as it’s supposed to be and also
+wrote README.
+
+--------------------------------------------------
+
+(7) If you have attempted extra credit
+We successfully attempted extra credit for executing multiple recipes
+in different lines and in the same line seperating by commas, within the same target in the order they are read.
+
+--------------------------------------------------
